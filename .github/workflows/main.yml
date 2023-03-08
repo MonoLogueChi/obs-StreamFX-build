@@ -305,41 +305,6 @@ jobs:
           --config Release \
           --component obs_libraries
 
-    # - name: "Configure & Build (Debug)"
-    #   continue-on-error: true
-    #   shell: bash
-    #   env:
-    #     CMAKE_BUILD_TYPE: "Debug"
-    #   run: |
-    #     cmake \
-    #       -S "${{ github.workspace }}" \
-    #       -B "${{ github.workspace }}/build/debug" \
-    #       ${{ env.cmake_generator }} \
-    #       ${{ env.cmake_generator_toolset }} \
-    #       ${{ env.cmake_generator_platform }} \
-    #       -DCMAKE_C_COMPILER="${{ env.CC }}" \
-    #       -DCMAKE_CXX_COMPILER="${{ env.CXX }}" \
-    #       -DCMAKE_LINKER="${{ env.LD }}" \
-    #       -DCMAKE_OSX_ARCHITECTURES="${{ matrix.CMAKE_OSX_ARCHITECTURES }}" \
-    #       -DCMAKE_OSX_DEPLOYMENT_TARGET="${{ matrix.CMAKE_OSX_DEPLOYMENT_TARGET }}" \
-    #       -DCMAKE_SYSTEM_VERSION="${{ matrix.CMAKE_SYSTEM_VERSION }}" \
-    #       -DCMAKE_BUILD_TYPE="${{ env.CMAKE_BUILD_TYPE }}" \
-    #       -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/build/debug/install" \
-    #       -DPACKAGE_NAME="streamfx-${{ matrix.package_name }}-debug" \
-    #       -DPACKAGE_PREFIX="${{ github.workspace }}/build/package" \
-    #       -DENABLE_CLANG=TRUE -DCLANG_PATH="${{ env.CLANG_PATH }}" \
-    #       -DENABLE_PROFILING=ON \
-    #       -Dlibobs_DIR="${{ github.workspace }}/build/obs/install" \
-    #       -DQt_DIR="${{ github.workspace }}/build/qt" \
-    #       -DFFmpeg_DIR="${{ github.workspace }}/build/obsdeps" \
-    #       -DCURL_DIR="${{ github.workspace }}/build/obsdeps"
-    #     if [[ "${{ matrix.runner }}" = windows* ]]; then
-    #       cmake --build "build/debug" --config ${{ env.CMAKE_BUILD_TYPE }} --target install
-    #     elif [[ "${{ matrix.runner }}" = ubuntu* ]]; then
-    #       cmake --build "build/debug" --config ${{ env.CMAKE_BUILD_TYPE }} --target install
-    #     elif [[ "${{ matrix.runner }}" = macos* ]]; then
-    #       cmake --build "build/debug" --config ${{ env.CMAKE_BUILD_TYPE }} --target install
-    #     fi
     - name: "Configure & Build (Release)"
       shell: bash
       env:
@@ -379,19 +344,16 @@ jobs:
       shell: bash
       run: |
         mkdir "${{ github.workspace }}/build/package"
-        cmake --build "${{ github.workspace }}/build/debug" --config Debug --target PACKAGE_7Z
         cmake --build "${{ github.workspace }}/build/release" --config RelWithDebInfo --target PACKAGE_7Z
     - name: "Packages (Windows)"
       if: startsWith( matrix.runner, 'windows' )
       shell: cmd
       run: |
-        "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /V10 ".\build\debug\installer.iss"
         "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /V10 ".\build\release\installer.iss"
     - name: "Packages (MacOS)"
       if: startsWith( matrix.runner, 'macos' )
       shell: bash
       run: |
-        packagesbuild "${{ github.workspace }}/build/debug/installer.pkgproj"
         packagesbuild "${{ github.workspace }}/build/release/installer.pkgproj"
 
     - name: "Artifacts"
@@ -404,7 +366,6 @@ jobs:
     - name: "Validate clang-format"
       shell: bash
       run: |
-        cmake --build "${{ github.workspace }}/build/debug" --config Debug --target clang-format
         cmake --build "${{ github.workspace }}/build/release" --config RelWithDebInfo --target clang-format
         git --no-pager diff --patch --minimal HEAD --
         git update-index --refresh
@@ -413,7 +374,6 @@ jobs:
       continue-on-error: true
       shell: bash
       run: |
-        cmake --build "${{ github.workspace }}/build/debug" --config Debug --target clang-tidy
         cmake --build "${{ github.workspace }}/build/release" --config RelWithDebInfo --target clang-tidy
         git --no-pager diff --patch --minimal HEAD --
         git update-index --refresh
