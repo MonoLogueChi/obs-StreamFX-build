@@ -28,12 +28,18 @@ jobs:
             generator: GCC
           - runner: windows-2022
             generator: Clang
+          - runner: windows-2022
+            qt: 5
           - runner: macos-12
             generator: MSVC
           - runner: macos-12
             generator: GCC
+          - runner: macos-12
+            qt: 5
           - runner: ubuntu-22.04
             generator: MSVC
+          - runner: ubuntu-22.04
+            qt: 5
           - runner: ubuntu-20.04
             generator: MSVC
           - runner: ubuntu-20.04
@@ -315,6 +321,13 @@ jobs:
       #     restore-keys: |
       #       "${{ matrix.runner }}-${{ matrix.generator }}-${{ github.ref_name }}-obs${{ env.obs_version }}-obsdeps${{ env.obs_deps_version }}-qt${{ matrix.qt }}-${{ env.CACHE_VERSION }}"
       #       "${{ matrix.runner }}-${{ matrix.generator }}-main-obs${{ env.obs_version }}-obsdeps${{ env.obs_deps_version }}-qt${{ matrix.qt }}-${{ env.CACHE_VERSION }}"
+      
+      - name: "rm git"
+        continue-on-error: true
+        shell: bash
+        run: |
+          rm -rf .git
+      
       - name: "Configure"
         continue-on-error: true
         shell: bash
@@ -325,6 +338,7 @@ jobs:
             ${{ env.cmake_generator }} \
             ${{ env.cmake_generator_toolset }} \
             ${{ env.cmake_generator_platform }} \
+            -D_VERSION="${{ steps.previoustag.outputs.tag }}" \
             -DCMAKE_C_COMPILER="${{ env.CC }}" \
             -DCMAKE_CXX_COMPILER="${{ env.CXX }}" \
             -DCMAKE_LINKER="${{ env.LD }}" \
